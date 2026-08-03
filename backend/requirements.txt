@@ -72,7 +72,7 @@ mmh3==5.2.1
 mpmath==1.3.0
 multidict==6.7.1
 networkx==3.4.2
-numpy==2.2.6
+numpy==1.26.4
 oauthlib==3.3.1
 opentelemetry-api==1.44.0
 opentelemetry-exporter-otlp-proto-common==1.44.0
@@ -115,8 +115,8 @@ rich==15.0.0
 rpds-py==0.30.0
 safetensors==0.8.0
 scikit-learn==1.7.2
-scipy==1.15.3
-sentence-transformers==5.6.1
+scipy==1.13.1
+sentence-transformers==3.0.1
 shellingham==1.5.4
 six==1.17.0
 sniffio==1.3.1

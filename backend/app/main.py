@@ -3,12 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.database.database import Base, engine
 
-# Import models
-from app.models.user import User
-from app.models.research_project import ResearchProject
-from app.models.document import Document
-from app.models.research_result import ResearchResult
-from app.models.source import Source
+# Import models (registers them with SQLAlchemy's Base metadata)
+import app.models  # noqa: F401
 
 # Import routers
 from app.api.research import router as research_router
@@ -22,7 +18,7 @@ Base.metadata.create_all(bind=engine)
 # Create FastAPI app
 app = FastAPI(
     title="Enterprise AI Research Agent",
-    version="1.0.0"
+    version="2.0.0"
 )
 
 # Enable CORS
@@ -40,11 +36,13 @@ app.include_router(chat_router)
 app.include_router(history_router)
 app.include_router(stats_router)
 
+
 @app.get("/")
 def root():
     return {
         "message": "Enterprise AI Research Agent is running successfully!"
     }
+
 
 @app.get("/health")
 def health():

@@ -1,11 +1,14 @@
 import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import api from "../api/api";
+import SummaryCard from "./SummaryCard";
+import StatsCard from "./StatsCard";
 
 export default function SearchBox() {
   const [topic, setTopic] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
+  const [error, setError] = useState(null);
 
   const research = async () => {
     if (!topic.trim()) {
@@ -15,15 +18,17 @@ export default function SearchBox() {
 
     try {
       setLoading(true);
+      setError(null);
 
-      const response = await api.post("/research", {
-        topic: topic,
-      });
+      // The pipeline runs synchronously: define questions -> search -> scrape
+      // -> extract findings -> compare/classify -> detect contradictions ->
+      // conclude, per question. This can take a while for multiple questions.
+      const response = await api.post("/research", { topic });
 
       setResult(response.data);
-    } catch (error) {
-      console.error(error);
-      alert("Failed to fetch research.");
+    } catch (err) {
+      console.error(err);
+      setError("Failed to run the research pipeline. Is the backend running?");
     } finally {
       setLoading(false);
     }
@@ -37,6 +42,7 @@ export default function SearchBox() {
           value={topic}
           placeholder="Enter research topic..."
           onChange={(e) => setTopic(e.target.value)}
+          onKeyDown={(e) => e.key === "Enter" && research()}
           style={{
             flex: 1,
             padding: "14px",
@@ -48,19 +54,25 @@ export default function SearchBox() {
 
         <button
           onClick={research}
+          disabled={loading}
           style={{
             padding: "14px 24px",
             backgroundColor: "#2563eb",
             color: "white",
             border: "none",
             borderRadius: "8px",
-            cursor: "pointer",
+            cursor: loading ? "default" : "pointer",
             fontSize: "16px",
+            opacity: loading ? 0.7 : 1,
           }}
         >
           {loading ? "Researching..." : "Research"}
         </button>
       </div>
+
+      {error && (
+        <div style={{ marginTop: "16px", color: "#e74c3c" }}>{error}</div>
+      )}
 
       {result && (
         <div
@@ -73,51 +85,24 @@ export default function SearchBox() {
             color: "#ffffff",
           }}
         >
-          <h2 style={{ marginBottom: "20px" }}>
-            📄 Executive Summary
-          </h2>
+          <h2 style={{ marginTop: 0 }}>🚀 {result.topic}</h2>
 
-          <div
-            style={{
-              textAlign: "left",
-              lineHeight: "1.8",
-              fontSize: "16px",
-            }}
-          >
-            <ReactMarkdown>{result.summary}</ReactMarkdown>
-          </div>
+          <StatsCard
+            totalSources={result.total_sources}
+            questionCount={result.questions.length}
+            status={result.status}
+          />
+
+          <h3>🧩 Research Questions & Evidence Trail</h3>
+          {result.questions.map((q) => (
+            <SummaryCard key={q.id} question={q} />
+          ))}
 
           <hr style={{ margin: "30px 0" }} />
 
-          <h2>🔗 Sources</h2>
-
-          <div style={{ marginTop: "20px" }}>
-            {result.sources.map((source, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: "15px",
-                  marginBottom: "12px",
-                  border: "1px solid #444",
-                  borderRadius: "10px",
-                  backgroundColor: "#2b2b2b",
-                }}
-              >
-                <a
-                  href={source.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    color: "#4ea8ff",
-                    textDecoration: "none",
-                    fontWeight: "bold",
-                    fontSize: "16px",
-                  }}
-                >
-                  {source.title}
-                </a>
-              </div>
-            ))}
+          <h2>📄 Executive Summary</h2>
+          <div style={{ textAlign: "left", lineHeight: "1.8", fontSize: "16px" }}>
+            <ReactMarkdown>{result.final_report}</ReactMarkdown>
           </div>
         </div>
       )}

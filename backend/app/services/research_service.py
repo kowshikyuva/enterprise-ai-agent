@@ -43,7 +43,7 @@ def _compile_final_report(topic: str, question_results: list[dict]) -> str:
 def _research_one_question(db: Session, question: ResearchQuestion) -> dict:
     """Runs stages 2-9 for a single sub-question and persists everything."""
 
-    search_results = search_web(question.text, max_results=SOURCES_PER_QUESTION + 2)
+    search_results = search_web(question.text, max_results=SOURCES_PER_QUESTION + 2) or []
 
     # findings collected for this question, kept in a lightweight in-memory
     # shape ({"index", "content", "source_title"}) so the comparison /

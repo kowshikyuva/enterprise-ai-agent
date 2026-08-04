@@ -1,6 +1,11 @@
+import { useState } from "react";
+import Navbar from "../components/Navbar";
 import SearchBox from "../components/SearchBox";
+import History from "./History";
 
 export default function Dashboard() {
+  const [view, setView] = useState("search");
+
   return (
     <div
       style={{
@@ -17,7 +22,10 @@ export default function Dashboard() {
         Gemini.
       </p>
 
-      <SearchBox />
+      <Navbar view={view} onChangeView={setView} />
+
+      {view === "search" && <SearchBox />}
+      {view === "history" && <History />}
     </div>
   );
 }

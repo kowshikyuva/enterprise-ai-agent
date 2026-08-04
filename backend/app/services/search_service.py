@@ -23,6 +23,8 @@ def _raw_search(query: str, max_results: int):
 
 
 def search_web(query: str, max_results: int = 10):
+    print(f"Searching web for: {query!r}...")
+
     try:
         future = _executor.submit(_raw_search, query, max_results)
         results = future.result(timeout=SEARCH_TIMEOUT_SECONDS)
@@ -32,3 +34,13 @@ def search_web(query: str, max_results: int = 10):
     except Exception as e:
         print(f"Web search failed: {e}")
         return []
+
+    print(f"Search returned {len(results)} raw results.")
+
+    filtered = []
+    for result in results:
+        url = result.get("href", "").lower()
+        if not any(domain in url for domain in BLOCKED_DOMAINS):
+            filtered.append(result)
+
+    return filtered[:5]
